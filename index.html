@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0d0f0e">
+  <meta name="description" content="Convert Modrinth .mrpack files into a ZIP containing the actual mods. Runs in your browser.">
+  <title>MRPACK ZIP — Extract the mods</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%23171918'/%3E%3Cpath d='M10 12h8v8h-8zM22 12h8v8h-8zM10 24h8v4h-8zM22 24h8v4h-8z' fill='%23b7f397'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0d0f0e;
+      --panel: #131615;
+      --panel-soft: #171b19;
+      --border: #292f2b;
+      --text: #f0f3ef;
+      --muted: #929b94;
+      --accent: #b7f397;
+      --accent-ink: #182313;
+      --danger: #ff9a9a;
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font: 15px/1.5 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: -.01em;
+    }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, .dropzone:focus-visible, a:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 4px;
+    }
+    .shell { width: min(100% - 36px, 680px); margin: 0 auto; }
+    header {
+      height: 78px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #222623;
+    }
+    .brand { display: inline-flex; gap: 11px; align-items: center; color: var(--text); text-decoration: none; font-weight: 720; letter-spacing: -.035em; }
+    .brand-mark {
+      width: 34px; height: 34px; display: grid; grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr; gap: 3px; padding: 7px; border-radius: 10px; background: #202720;
+    }
+    .brand-mark span { border-radius: 2px; background: var(--accent); }
+    .brand-mark span:nth-child(3), .brand-mark span:nth-child(4) { opacity: .65; }
+    .tag {
+      color: var(--muted); font-size: 12px; letter-spacing: .015em;
+      border: 1px solid var(--border); border-radius: 99px; padding: 5px 10px;
+    }
+    main { padding: 66px 0 54px; }
+    .eyebrow { color: var(--accent); text-transform: uppercase; letter-spacing: .14em; font-size: 11px; font-weight: 750; }
+    h1 { margin: 12px 0 14px; max-width: 590px; font-size: clamp(36px, 8vw, 54px); line-height: 1.04; letter-spacing: -.065em; font-weight: 740; }
+    h1 span { color: var(--accent); }
+    .intro { color: var(--muted); font-size: 16px; max-width: 500px; margin: 0; }
+    .card { margin-top: 35px; padding: 18px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--panel); }
+    .dropzone {
+      min-height: 238px; padding: 32px 22px; border: 1px dashed #414b43; border-radius: 12px;
+      background: #111412; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+      transition: border-color .16s ease, background .16s ease;
+      cursor: pointer;
+    }
+    .dropzone:hover, .dropzone.dragging { border-color: var(--accent); background: #161d15; }
+    .upload-icon { width: 46px; height: 46px; display: grid; place-items: center; border-radius: 13px; background: #222a20; color: var(--accent); margin-bottom: 18px; }
+    .upload-icon svg { width: 23px; height: 23px; }
+    .drop-title { font-size: 17px; font-weight: 650; letter-spacing: -.025em; }
+    .drop-sub { margin-top: 4px; color: var(--muted); font-size: 13px; }
+    .button {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid transparent;
+      border-radius: 9px; padding: 10px 15px; min-height: 42px; font-weight: 680; font-size: 13px;
+      transition: opacity .15s ease, background .15s ease, border-color .15s ease;
+    }
+    .button:disabled { opacity: .42; cursor: not-allowed; }
+    .primary { color: var(--accent-ink); background: var(--accent); }
+    .primary:not(:disabled):hover { background: #c8ffab; }
+    .secondary { background: var(--panel-soft); border-color: var(--border); color: var(--text); }
+    .secondary:not(:disabled):hover { border-color: #536052; }
+    .dropzone .button { margin-top: 19px; }
+    .input-note { font-size: 12px; color: #788078; margin-top: 13px; }
+    .privacy { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; padding: 15px 3px 1px; }
+    .privacy svg { flex: 0 0 auto; color: var(--accent); width: 15px; height: 15px; }
+    .status { margin-top: 14px; padding: 18px; border: 1px solid var(--border); border-radius: 12px; background: var(--panel-soft); }
+    .status[hidden], .dropzone[hidden], .actions[hidden], .status-message[hidden] { display: none; }
+    .file-row { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .file-icon { flex: 0 0 auto; display: grid; place-items: center; width: 40px; height: 40px; background: #252c25; border-radius: 10px; color: var(--accent); }
+    .file-icon svg { width: 20px; height: 20px; }
+    .file-meta { min-width: 0; flex: 1; }
+    .file-name { font-size: 14px; font-weight: 650; overflow-wrap: anywhere; }
+    .file-size { color: var(--muted); font-size: 12px; margin-top: 2px; }
+    .status-label { margin-top: 17px; font-size: 13px; display: flex; align-items: center; justify-content: space-between; gap: 12px; color: #d6ddd6; }
+    .status-label .count { color: var(--muted); font-variant-numeric: tabular-nums; }
+    .track { height: 5px; width: 100%; background: #303632; border-radius: 20px; margin-top: 9px; overflow: hidden; }
+    .fill { height: 100%; width: 0%; background: var(--accent); border-radius: 20px; transition: width .2s ease; }
+    .status-message { margin-top: 12px; font-size: 12px; color: var(--muted); white-space: pre-wrap; overflow-wrap: anywhere; }
+    .status-message.error { color: var(--danger); }
+    .actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 15px; }
+    .actions .primary { flex: 1; }
+    .details { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 18px; }
+    .detail { border: 1px solid #252b27; border-radius: 11px; padding: 13px; min-width: 0; }
+    .detail strong { display: block; font-size: 13px; font-weight: 680; }
+    .detail span { display: block; color: var(--muted); font-size: 11px; margin-top: 3px; }
+    .how { margin-top: 43px; }
+    .how h2 { margin: 0; font-size: 14px; letter-spacing: -.01em; }
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 18px; }
+    .step-number { font-size: 11px; color: var(--accent); font-weight: 750; letter-spacing: .08em; }
+    .step-title { font-size: 13px; font-weight: 650; margin-top: 7px; }
+    .step-text { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    footer { border-top: 1px solid #222623; padding: 19px 0 28px; display: flex; align-items: center; justify-content: space-between; gap: 14px; color: #7f8981; font-size: 11px; }
+    footer a { color: #a5afa7; text-decoration: none; }
+    footer a:hover { color: var(--accent); }
+    .loading { display: inline-block; width: 13px; height: 13px; border: 2px solid #50604b; border-top-color: var(--accent); border-radius: 50%; animation: spin .75s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (max-width: 520px) {
+      .shell { width: min(100% - 26px, 680px); }
+      main { padding: 47px 0 38px; }
+      header { height: 68px; }
+      .card { padding: 11px; margin-top: 27px; }
+      .dropzone { min-height: 222px; padding: 25px 12px; }
+      .details { gap: 7px; }
+      .detail { padding: 10px 9px; }
+      .detail strong { font-size: 12px; }
+      .detail span { font-size: 10px; }
+      .steps { gap: 13px; }
+      .step-text { font-size: 11px; }
+      .tag { font-size: 10px; padding: 4px 8px; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <a class="brand" href="./" aria-label="MRPACK ZIP home">
+        <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+        <span>mrpack.zip</span>
+      </a>
+      <span class="tag">Free · No account</span>
+    </header>
+
+    <main>
+      <div class="eyebrow">One file in. Mods out.</div>
+      <h1>Unpack your mods.<br><span>Nothing extra.</span></h1>
+      <p class="intro">Turn a Modrinth .mrpack into a regular ZIP with the actual mod files, ready to move wherever you need them.</p>
+
+      <section class="card" aria-label="MRPACK converter">
+        <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Choose or drop a .mrpack file">
+          <div class="upload-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m-5 5 5-5 5 5"/><path d="M5 14v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-5"/></svg>
+          </div>
+          <div class="drop-title">Drop your .mrpack here</div>
+          <div class="drop-sub">or choose a file from your device</div>
+          <button class="button secondary" id="chooseButton" type="button">Choose file</button>
+          <input id="fileInput" type="file" accept=".mrpack,.zip,application/x-modrinth-modpack+zip,application/zip" hidden>
+          <div class="input-note">.mrpack or ZIP · Processed in your browser</div>
+        </div>
+
+        <div class="status" id="status" hidden aria-live="polite">
+          <div class="file-row">
+            <div class="file-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10z"/><path d="M13 3v7h7M8 15h8M8 18h6"/></svg>
+            </div>
+            <div class="file-meta">
+              <div class="file-name" id="fileName"></div>
+              <div class="file-size" id="fileSize"></div>
+            </div>
+            <button class="button secondary" id="replaceButton" type="button">Replace</button>
+          </div>
+          <div class="status-label">
+            <span id="progressLabel">Reading modpack…</span>
+            <span class="count" id="progressCount"></span>
+          </div>
+          <div class="track" id="progressTrack" role="progressbar" aria-label="Conversion progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div class="fill" id="progressFill"></div>
+          </div>
+          <div class="status-message" id="statusMessage"></div>
+          <div class="actions" id="actions" hidden>
+            <button class="button primary" id="downloadButton" type="button">Download ZIP</button>
+            <button class="button secondary" id="resetButton" type="button">Convert another</button>
+          </div>
+        </div>
+      </section>
+
+      <div class="privacy">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><path d="m9 15 2 2 4-4"/></svg>
+        Your file stays on your device. Only the mod downloads are fetched from their listed sources.
+      </div>
+
+      <div class="details" aria-label="Features">
+        <div class="detail"><strong>Browser-only</strong><span>No uploads or accounts</span></div>
+        <div class="detail"><strong>SHA-512 checks</strong><span>Verify mod downloads</span></div>
+        <div class="detail"><strong>Just the mods</strong><span>Clean ZIP output</span></div>
+      </div>
+
+      <section class="how">
+        <h2>How it works</h2>
+        <div class="steps">
+          <div><div class="step-number">01 / UPLOAD</div><div class="step-title">Choose a pack</div><div class="step-text">Drop in any compatible .mrpack.</div></div>
+          <div><div class="step-number">02 / EXTRACT</div><div class="step-title">Fetch the mods</div><div class="step-text">Downloads are checked against the pack's hashes.</div></div>
+          <div><div class="step-number">03 / DOWNLOAD</div><div class="step-title">Get your ZIP</div><div class="step-text">A regular ZIP with the files inside a mods folder.</div></div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>Small tool. No nonsense.</span>
+      <a href="https://github.com/todouro/mrpack-zip" target="_blank" rel="noreferrer">Source on GitHub ↗</a>
+    </footer>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script>
+    (function () {
+      "use strict";
+
+      const MAX_PACK_SIZE = 250 * 1024 * 1024;
+      const fileInput = document.getElementById("fileInput");
+      const dropzone = document.getElementById("dropzone");
+      const chooseButton = document.getElementById("chooseButton");
+      const replaceButton = document.getElementById("replaceButton");
+      const resetButton = document.getElementById("resetButton");
+      const downloadButton = document.getElementById("downloadButton");
+      const status = document.getElementById("status");
+      const fileName = document.getElementById("fileName");
+      const fileSize = document.getElementById("fileSize");
+      const progressLabel = document.getElementById("progressLabel");
+      const progressCount = document.getElementById("progressCount");
+      const progressTrack = document.getElementById("progressTrack");
+      const progressFill = document.getElementById("progressFill");
+      const statusMessage = document.getElementById("statusMessage");
+      const actions = document.getElementById("actions");
+
+      let outputBlob = null;
+      let outputName = "";
+      let runId = 0;
+
+      function humanSize(bytes) {
+        if (!Number.isFinite(bytes) || bytes < 0) return "Unknown size";
+        if (bytes < 1024) return bytes + " B";
+        const units = ["KB", "MB", "GB"];
+        let size = bytes / 1024;
+        let unit = 0;
+        while (size >= 1024 && unit < units.length - 1) { size /= 1024; unit++; }
+        return size.toFixed(size >= 100 ? 0 : size >= 10 ? 1 : 2) + " " + units[unit];
+      }
+
+      function setProgress(percent, label, count) {
+        const bounded = Math.max(0, Math.min(100, percent));
+        progressFill.style.width = bounded + "%";
+        progressTrack.setAttribute("aria-valuenow", String(Math.round(bounded)));
+        progressLabel.textContent = label;
+        progressCount.textContent = count || "";
+      }
+
+      function message(text, isError) {
+        statusMessage.textContent = text || "";
+        statusMessage.classList.toggle("error", Boolean(isError));
+        statusMessage.hidden = !text;
+      }
+
+      function cleanOutputName(name) {
+        return name.replace(/\.(mrpack|zip)$/i, "").replace(/[\\/:*?"<>|]/g, "-").trim() || "modpack";
+      }
+
+      function reset() {
+        runId++;
+        outputBlob = null;
+        outputName = "";
+        fileInput.value = "";
+        status.hidden = true;
+        dropzone.hidden = false;
+        actions.hidden = true;
+        message("", false);
+        setProgress(0, "Reading modpack…", "");
+        downloadButton.disabled = false;
+      }
+
+      function selectFile(file) {
+        if (!file) return;
+        if (!/\.(mrpack|zip)$/i.test(file.name)) {
+          status.hidden = false;
+          dropzone.hidden = true;
+          fileName.textContent = file.name;
+          fileSize.textContent = humanSize(file.size);
+          setProgress(0, "Unsupported file", "");
+          message("Choose a .mrpack file (or a ZIP using the .mrpack format).", true);
+          actions.hidden = true;
+          return;
+        }
+        if (file.size > MAX_PACK_SIZE) {
+          status.hidden = false;
+          dropzone.hidden = true;
+          fileName.textContent = file.name;
+          fileSize.textContent = humanSize(file.size);
+          setProgress(0, "File is too large", "");
+          message("This browser-only converter supports pack files up to 250 MB.", true);
+          actions.hidden = true;
+          return;
+        }
+        convert(file);
+      }
+
+      function safeModPath(path) {
+        if (typeof path !== "string" || path.indexOf("\\") !== -1 || path.startsWith("/") || /^[a-zA-Z]:/.test(path)) return false;
+        const parts = path.split("/");
+        return parts[0] === "mods" && parts.length > 1 && parts.every(function (part) {
+          return part !== "" && part !== "." && part !== "..";
+        });
+      }
+
+      async function sha512Matches(buffer, expected) {
+        if (!expected || !window.crypto || !window.crypto.subtle) return null;
+        const digest = await window.crypto.subtle.digest("SHA-512", buffer);
+        const actual = Array.from(new Uint8Array(digest)).map(function (byte) {
+          return byte.toString(16).padStart(2, "0");
+        }).join("");
+        return actual.toLowerCase() === String(expected).toLowerCase();
+      }
+
+      async function downloadMod(entry) {
+        if (!Array.isArray(entry.downloads) || entry.downloads.length === 0) {
+          throw new Error("No download URL was listed in the pack.");
+        }
+        let lastError = "No compatible download URL.";
+        for (const rawUrl of entry.downloads) {
+          let url;
+          try { url = new URL(rawUrl); } catch (_) { lastError = "Invalid download URL."; continue; }
+          if (url.protocol !== "https:") { lastError = "Only HTTPS download URLs are allowed."; continue; }
+          try {
+            const response = await fetch(url.href, { mode: "cors", credentials: "omit", referrerPolicy: "no-referrer" });
+            if (!response.ok) throw new Error("HTTP " + response.status);
+            const buffer = await response.arrayBuffer();
+            if (entry.hashes && entry.hashes.sha512) {
+              const matches = await sha512Matches(buffer, entry.hashes.sha512);
+              if (matches === false) throw new Error("SHA-512 checksum did not match.");
+            }
+            return buffer;
+          } catch (error) {
+            lastError = error && error.message ? error.message : "Download failed.";
+          }
+        }
+        if (/failed to fetch|networkerror|load failed/i.test(lastError)) {
+          throw new Error("The source blocked browser access (CORS) or the network request failed.");
+        }
+        throw new Error(lastError);
+      }
+
+      async function convert(file) {
+        const thisRun = ++runId;
+        outputBlob = null;
+        outputName = "";
+        status.hidden = false;
+        dropzone.hidden = true;
+        actions.hidden = true;
+        fileName.textContent = file.name;
+        fileSize.textContent = humanSize(file.size);
+        message("", false);
+        setProgress(2, "Opening pack…", "");
+        if (typeof window.JSZip === "undefined") {
+          setProgress(0, "Converter library unavailable", "");
+          message("JSZip could not load. Check your connection and refresh the page.", true);
+          return;
+        }
+
+        try {
+          const pack = await window.JSZip.loadAsync(file, { checkCRC32: false });
+          if (thisRun !== runId) return;
+          const manifestFile = pack.file("modrinth.index.json");
+          if (!manifestFile) throw new Error("This ZIP does not contain modrinth.index.json. Make sure it is a valid Modrinth .mrpack.");
+          const manifestText = await manifestFile.async("string");
+          if (manifestText.length > 10 * 1024 * 1024) throw new Error("The modpack manifest is unexpectedly large.");
+          let manifest;
+          try { manifest = JSON.parse(manifestText); } catch (_) { throw new Error("The modpack manifest is not valid JSON."); }
+          if (!manifest || manifest.formatVersion !== 1 || !Array.isArray(manifest.files)) throw new Error("This modpack has an unsupported or invalid manifest.");
+
+          const mods = manifest.files.filter(function (entry) {
+            return entry && typeof entry.path === "string" && entry.path.startsWith("mods/") &&
+              !(entry.env && entry.env.client === "unsupported") && safeModPath(entry.path);
+          });
+          if (mods.length === 0) throw new Error("No client-side mod files were found in the pack's mods/ folder.");
+          const unsafeCount = manifest.files.filter(function (entry) {
+            return entry && typeof entry.path === "string" && entry.path.startsWith("mods/") && !safeModPath(entry.path);
+          }).length;
+          if (unsafeCount > 0) throw new Error("The manifest contains unsafe mod paths. Nothing was extracted.");
+
+          const zip = new window.JSZip();
+          let completed = 0;
+          let nextIndex = 0;
+          const errors = [];
+          setProgress(5, "Downloading mods…", "0 / " + mods.length);
+
+          async function worker() {
+            while (true) {
+              const index = nextIndex++;
+              if (index >= mods.length) return;
+              const entry = mods[index];
+              try {
+                const buffer = await downloadMod(entry);
+                if (thisRun !== runId) return;
+                zip.file(entry.path, buffer, { binary: true, createFolders: true });
+              } catch (error) {
+                errors.push({ path: entry.path, reason: error && error.message ? error.message : "Download failed." });
+              }
+              completed++;
+              setProgress(5 + (completed / mods.length) * 78, "Downloading mods…", completed + " / " + mods.length);
+            }
+          }
+
+          await Promise.all([worker(), worker(), worker(), worker()]);
+          if (thisRun !== runId) return;
+          if (errors.length) {
+            setProgress(0, "Some mods could not be downloaded", errors.length + " failed");
+            const lines = errors.slice(0, 4).map(function (item) { return item.path + ": " + item.reason; });
+            if (errors.length > 4) lines.push("…and " + (errors.length - 4) + " more.");
+            throw new Error(lines.join("\n") + "\n\nNo incomplete ZIP was created. Check the source URLs or try again on a network that allows the downloads.");
+          }
+
+          setProgress(86, "Building ZIP…", mods.length + " mods");
+          const blob = await zip.generateAsync(
+            { type: "blob", mimeType: "application/zip", compression: "DEFLATE", compressionOptions: { level: 1 } },
+            function (metadata) {
+              if (thisRun === runId) setProgress(86 + metadata.percent * 0.14, "Building ZIP…", Math.round(metadata.percent) + "%");
+            }
+          );
+          if (thisRun !== runId) return;
+          outputBlob = blob;
+          outputName = cleanOutputName(file.name) + "-mods.zip";
+          setProgress(100, "Your ZIP is ready", mods.length + " mods · " + humanSize(blob.size));
+          message("Created " + mods.length + " mod files. The ZIP keeps the mods/ folder structure and excludes configs, shaders, and other overrides.", false);
+          actions.hidden = false;
+          downloadButton.focus({ preventScroll: true });
+        } catch (error) {
+          if (thisRun !== runId) return;
+          setProgress(0, "Conversion failed", "");
+          message(error && error.message ? error.message : "Something went wrong while converting this pack.", true);
+          actions.hidden = false;
+          downloadButton.disabled = true;
+        }
+      }
+
+      function askForFile() { fileInput.click(); }
+      chooseButton.addEventListener("click", askForFile);
+      replaceButton.addEventListener("click", askForFile);
+      dropzone.addEventListener("click", function (event) {
+        if (!event.target.closest("button")) askForFile();
+      });
+      dropzone.addEventListener("keydown", function (event) {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          askForFile();
+        }
+      });
+      fileInput.addEventListener("change", function () {
+        selectFile(fileInput.files && fileInput.files[0]);
+      });
+      ["dragenter", "dragover"].forEach(function (name) {
+        dropzone.addEventListener(name, function (event) {
+          event.preventDefault();
+          event.dataTransfer.dropEffect = "copy";
+          dropzone.classList.add("dragging");
+        });
+      });
+      ["dragleave", "drop"].forEach(function (name) {
+        dropzone.addEventListener(name, function (event) {
+          event.preventDefault();
+          dropzone.classList.remove("dragging");
+        });
+      });
+      dropzone.addEventListener("drop", function (event) {
+        const file = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0];
+        selectFile(file);
+      });
+      resetButton.addEventListener("click", reset);
+      downloadButton.addEventListener("click", function () {
+        if (!outputBlob) return;
+        const url = URL.createObjectURL(outputBlob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = outputName;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
+      });
+    })();
+  </script>
+</body>
+</html>

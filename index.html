@@ -149,8 +149,20 @@
     .secondary:not(:disabled):hover { border-color: var(--muted); }
     .dropzone .button { margin-top: 18px; }
     .input-note { font-size: 12px; color: var(--muted); margin-top: 12px; }
-    .privacy { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 12px; padding: 12px 2px 0; }
-    .privacy svg { flex: 0 0 auto; width: 14px; height: 14px; }
+    .privacy {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 12px;
+      padding: 11px 13px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--surface-soft);
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .privacy svg { flex: 0 0 auto; width: 16px; height: 16px; color: var(--accent); }
     .status { margin-top: 12px; padding: 16px; border: 1px solid var(--border); border-radius: 9px; background: var(--surface-soft); }
     .status[hidden], .dropzone[hidden], .actions[hidden], .status-message[hidden] { display: none; }
     .file-row { display: flex; align-items: center; gap: 11px; min-width: 0; }
@@ -167,17 +179,32 @@
     .status-message.error { color: var(--danger); }
     .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
     .actions .primary { flex: 1; }
-    .how { margin-top: 36px; }
-    .how h2 { margin: 0; font-size: 13px; font-weight: 600; color: var(--muted); }
-    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 16px; }
-    .step { display: flex; align-items: flex-start; gap: 9px; min-width: 0; }
-    .step-number {
-      flex: 0 0 auto; display: grid; place-items: center; width: 23px; height: 23px;
-      border: 1px solid var(--border); border-radius: 6px; font-size: 11px; color: var(--muted);
-      font-weight: 600; font-variant-numeric: tabular-nums;
+    .how { margin-top: 32px; }
+    .how h2 { margin: 0; font-size: 14px; font-weight: 600; }
+    .steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 14px; }
+    .step {
+      min-width: 0;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface);
     }
-    .step-title { font-size: 13px; font-weight: 600; margin-top: 1px; }
-    .step-text { font-size: 12px; line-height: 1.4; color: var(--muted); margin-top: 2px; }
+    .step-heading { display: flex; align-items: center; gap: 8px; }
+    .step-number {
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      width: 25px;
+      height: 25px;
+      border-radius: 7px;
+      background: var(--icon-bg);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+    .step-title { font-size: 13px; font-weight: 600; }
+    .step-text { font-size: 12px; line-height: 1.45; color: var(--muted); margin-top: 8px; }
     footer { padding: 17px 0 24px; border-top: 1px solid var(--header-border); color: var(--muted); font-size: 12px; }
     footer a { color: var(--muted); text-decoration: none; }
     footer a:hover { color: var(--text); }
@@ -192,10 +219,9 @@
       .tag { font-size: 11px; padding: 4px 7px; }
       .header-actions { gap: 12px; }
       .theme-toggle { width: 36px; height: 36px; padding: 7px; }
-      .steps { gap: 10px; }
-      .step { display: block; }
-      .step-title { margin-top: 7px; }
-      .step-text { font-size: 11px; }
+      .steps { grid-template-columns: 1fr; gap: 8px; }
+      .step { padding: 12px 13px; }
+      .step-text { margin-top: 5px; padding-left: 33px; }
       .privacy { align-items: flex-start; }
     }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
@@ -254,15 +280,24 @@
 
       <div class="privacy">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><path d="m9 15 2 2 4-4"/></svg>
-        Your file stays on your device. Only the mod downloads are fetched from their listed sources.
+        <span>Your pack stays in your browser. It is never uploaded.</span>
       </div>
 
       <section class="how" aria-label="How it works">
         <h2>How it works</h2>
         <div class="steps">
-          <div class="step"><span class="step-number">1</span><div><div class="step-title">Upload</div><div class="step-text">Choose a .mrpack.</div></div></div>
-          <div class="step"><span class="step-number">2</span><div><div class="step-title">Extract</div><div class="step-text">Mods are downloaded.</div></div></div>
-          <div class="step"><span class="step-number">3</span><div><div class="step-title">Download</div><div class="step-text">Get your ZIP.</div></div></div>
+          <div class="step">
+            <div class="step-heading"><span class="step-number">01</span><span class="step-title">Choose a pack</span></div>
+            <div class="step-text">Select a .mrpack from your device.</div>
+          </div>
+          <div class="step">
+            <div class="step-heading"><span class="step-number">02</span><span class="step-title">Prepare mods</span></div>
+            <div class="step-text">Mods download and are verified.</div>
+          </div>
+          <div class="step">
+            <div class="step-heading"><span class="step-number">03</span><span class="step-title">Save the ZIP</span></div>
+            <div class="step-text">Download your extracted mod files.</div>
+          </div>
         </div>
       </section>
     </main>

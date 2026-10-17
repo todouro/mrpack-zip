@@ -1,26 +1,57 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0d0f0e">
+  <meta name="theme-color" content="#111312">
   <meta name="description" content="Convert Modrinth .mrpack files into a ZIP containing the actual mods. Runs in your browser.">
-  <title>MRPACK ZIP — Extract the mods</title>
+  <title>mrpack.zip</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%23171918'/%3E%3Cpath d='M10 12h8v8h-8zM22 12h8v8h-8zM10 24h8v4h-8zM22 24h8v4h-8z' fill='%23b7f397'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>try{document.documentElement.dataset.theme=localStorage.getItem("mrpack-zip-theme")||(matchMedia("(prefers-color-scheme: light)").matches?"light":"dark")}catch(_){}</script>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+
   <style>
     :root {
       color-scheme: dark;
-      --bg: #0d0f0e;
-      --panel: #131615;
-      --panel-soft: #171b19;
-      --border: #292f2b;
-      --text: #f0f3ef;
+      --bg: #111312;
+      --surface: #171a18;
+      --surface-soft: #1d211e;
+      --border: #2c322e;
+      --text: #edf0ed;
       --muted: #929b94;
       --accent: #b7f397;
-      --accent-ink: #182313;
-      --danger: #ff9a9a;
-      --radius: 18px;
+      --accent-ink: #1b2914;
+      --danger: #ff9f9f;
+      --header-border: #292f2b;
+      --drop-bg: #141715;
+      --drop-border: #454e47;
+      --hover-bg: #1c231c;
+      --icon-bg: #222a20;
+      --file-icon-bg: #252c25;
+      --track: #303632;
+      --radius: 12px;
+    }
+    :root[data-theme="light"] {
+      color-scheme: light;
+      --bg: #ffffff;
+      --surface: #ffffff;
+      --surface-soft: #f6f7f6;
+      --border: #e1e5e1;
+      --text: #202420;
+      --muted: #69716b;
+      --accent: #39752d;
+      --accent-ink: #ffffff;
+      --danger: #b42318;
+      --header-border: #e8ebe8;
+      --drop-bg: #fbfcfb;
+      --drop-border: #d5dbd5;
+      --hover-bg: #f4f8f2;
+      --icon-bg: #edf4e9;
+      --file-icon-bg: #edf4e9;
+      --track: #e4e8e4;
     }
     * { box-sizing: border-box; }
     body {
@@ -28,109 +59,147 @@
       min-height: 100vh;
       background: var(--bg);
       color: var(--text);
-      font: 15px/1.5 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      letter-spacing: -.01em;
+      font: 15px/1.5 "DM Sans", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: -.015em;
+      transition: background-color .16s ease, color .16s ease;
     }
     button, input { font: inherit; }
     button { cursor: pointer; }
     button:focus-visible, .dropzone:focus-visible, a:focus-visible {
       outline: 2px solid var(--accent);
-      outline-offset: 4px;
+      outline-offset: 3px;
     }
-    .shell { width: min(100% - 36px, 680px); margin: 0 auto; }
+    .shell { width: min(100% - 36px, 640px); margin: 0 auto; }
     header {
-      height: 78px;
+      min-height: 68px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid #222623;
+      gap: 12px;
+      border-bottom: 1px solid var(--header-border);
     }
-    .brand { display: inline-flex; gap: 11px; align-items: center; color: var(--text); text-decoration: none; font-weight: 720; letter-spacing: -.035em; }
-    .brand-mark {
-      width: 34px; height: 34px; display: grid; grid-template-columns: 1fr 1fr;
-      grid-template-rows: 1fr 1fr; gap: 3px; padding: 7px; border-radius: 10px; background: #202720;
+    .brand {
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 700;
+      letter-spacing: -.045em;
+      font-size: 17px;
     }
-    .brand-mark span { border-radius: 2px; background: var(--accent); }
-    .brand-mark span:nth-child(3), .brand-mark span:nth-child(4) { opacity: .65; }
+    .header-actions { display: flex; align-items: center; gap: 10px; }
     .tag {
-      color: var(--muted); font-size: 12px; letter-spacing: .015em;
-      border: 1px solid var(--border); border-radius: 99px; padding: 5px 10px;
+      color: var(--muted);
+      font-size: 12px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 5px 9px;
+      white-space: nowrap;
     }
-    main { padding: 66px 0 54px; }
-    .eyebrow { color: var(--accent); text-transform: uppercase; letter-spacing: .14em; font-size: 11px; font-weight: 750; }
-    h1 { margin: 12px 0 14px; max-width: 590px; font-size: clamp(36px, 8vw, 54px); line-height: 1.04; letter-spacing: -.065em; font-weight: 740; }
-    h1 span { color: var(--accent); }
-    .intro { color: var(--muted); font-size: 16px; max-width: 500px; margin: 0; }
-    .card { margin-top: 35px; padding: 18px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--panel); }
+    .theme-toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-height: 34px;
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .theme-toggle:hover { background: var(--surface-soft); }
+    .theme-toggle svg { width: 15px; height: 15px; }
+    main { padding: 44px 0 52px; }
+    .card {
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface);
+    }
     .dropzone {
-      min-height: 238px; padding: 32px 22px; border: 1px dashed #414b43; border-radius: 12px;
-      background: #111412; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
-      transition: border-color .16s ease, background .16s ease;
+      min-height: 225px;
+      padding: 30px 20px;
+      border: 1px dashed var(--drop-border);
+      border-radius: 9px;
+      background: var(--drop-bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      transition: border-color .15s ease, background-color .15s ease;
       cursor: pointer;
     }
-    .dropzone:hover, .dropzone.dragging { border-color: var(--accent); background: #161d15; }
-    .upload-icon { width: 46px; height: 46px; display: grid; place-items: center; border-radius: 13px; background: #222a20; color: var(--accent); margin-bottom: 18px; }
-    .upload-icon svg { width: 23px; height: 23px; }
-    .drop-title { font-size: 17px; font-weight: 650; letter-spacing: -.025em; }
-    .drop-sub { margin-top: 4px; color: var(--muted); font-size: 13px; }
+    .dropzone:hover, .dropzone.dragging { border-color: var(--accent); background: var(--hover-bg); }
+    .upload-icon {
+      width: 40px; height: 40px; display: grid; place-items: center;
+      border-radius: 10px; background: var(--icon-bg); color: var(--accent); margin-bottom: 15px;
+    }
+    .upload-icon svg { width: 21px; height: 21px; }
+    .drop-title { font-size: 16px; font-weight: 600; letter-spacing: -.025em; }
+    .drop-sub { margin-top: 3px; color: var(--muted); font-size: 13px; }
     .button {
-      display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid transparent;
-      border-radius: 9px; padding: 10px 15px; min-height: 42px; font-weight: 680; font-size: 13px;
-      transition: opacity .15s ease, background .15s ease, border-color .15s ease;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      border: 1px solid transparent; border-radius: 8px; padding: 9px 14px;
+      min-height: 39px; font-weight: 600; font-size: 13px;
+      transition: opacity .15s ease, background-color .15s ease, border-color .15s ease;
     }
     .button:disabled { opacity: .42; cursor: not-allowed; }
     .primary { color: var(--accent-ink); background: var(--accent); }
-    .primary:not(:disabled):hover { background: #c8ffab; }
-    .secondary { background: var(--panel-soft); border-color: var(--border); color: var(--text); }
-    .secondary:not(:disabled):hover { border-color: #536052; }
-    .dropzone .button { margin-top: 19px; }
-    .input-note { font-size: 12px; color: #788078; margin-top: 13px; }
-    .privacy { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; padding: 15px 3px 1px; }
-    .privacy svg { flex: 0 0 auto; color: var(--accent); width: 15px; height: 15px; }
-    .status { margin-top: 14px; padding: 18px; border: 1px solid var(--border); border-radius: 12px; background: var(--panel-soft); }
+    .primary:not(:disabled):hover { filter: brightness(1.06); }
+    .secondary { background: var(--surface-soft); border-color: var(--border); color: var(--text); }
+    .secondary:not(:disabled):hover { border-color: var(--muted); }
+    .dropzone .button { margin-top: 17px; }
+    .input-note { font-size: 12px; color: var(--muted); margin-top: 12px; }
+    .privacy { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 12px; padding: 12px 2px 0; }
+    .privacy svg { flex: 0 0 auto; width: 14px; height: 14px; }
+    .status { margin-top: 12px; padding: 16px; border: 1px solid var(--border); border-radius: 9px; background: var(--surface-soft); }
     .status[hidden], .dropzone[hidden], .actions[hidden], .status-message[hidden] { display: none; }
-    .file-row { display: flex; align-items: center; gap: 12px; min-width: 0; }
-    .file-icon { flex: 0 0 auto; display: grid; place-items: center; width: 40px; height: 40px; background: #252c25; border-radius: 10px; color: var(--accent); }
-    .file-icon svg { width: 20px; height: 20px; }
+    .file-row { display: flex; align-items: center; gap: 11px; min-width: 0; }
+    .file-icon { flex: 0 0 auto; display: grid; place-items: center; width: 36px; height: 36px; background: var(--file-icon-bg); border-radius: 8px; color: var(--accent); }
+    .file-icon svg { width: 19px; height: 19px; }
     .file-meta { min-width: 0; flex: 1; }
-    .file-name { font-size: 14px; font-weight: 650; overflow-wrap: anywhere; }
+    .file-name { font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
     .file-size { color: var(--muted); font-size: 12px; margin-top: 2px; }
-    .status-label { margin-top: 17px; font-size: 13px; display: flex; align-items: center; justify-content: space-between; gap: 12px; color: #d6ddd6; }
+    .status-label { margin-top: 16px; font-size: 13px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
     .status-label .count { color: var(--muted); font-variant-numeric: tabular-nums; }
-    .track { height: 5px; width: 100%; background: #303632; border-radius: 20px; margin-top: 9px; overflow: hidden; }
-    .fill { height: 100%; width: 0%; background: var(--accent); border-radius: 20px; transition: width .2s ease; }
-    .status-message { margin-top: 12px; font-size: 12px; color: var(--muted); white-space: pre-wrap; overflow-wrap: anywhere; }
+    .track { height: 4px; width: 100%; background: var(--track); border-radius: 10px; margin-top: 9px; overflow: hidden; }
+    .fill { height: 100%; width: 0%; background: var(--accent); border-radius: 10px; transition: width .2s ease; }
+    .status-message { margin-top: 11px; font-size: 12px; color: var(--muted); white-space: pre-wrap; overflow-wrap: anywhere; }
     .status-message.error { color: var(--danger); }
-    .actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 15px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
     .actions .primary { flex: 1; }
-    .details { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 18px; }
-    .detail { border: 1px solid #252b27; border-radius: 11px; padding: 13px; min-width: 0; }
-    .detail strong { display: block; font-size: 13px; font-weight: 680; }
-    .detail span { display: block; color: var(--muted); font-size: 11px; margin-top: 3px; }
-    .how { margin-top: 43px; }
-    .how h2 { margin: 0; font-size: 14px; letter-spacing: -.01em; }
-    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 18px; }
-    .step-number { font-size: 11px; color: var(--accent); font-weight: 750; letter-spacing: .08em; }
-    .step-title { font-size: 13px; font-weight: 650; margin-top: 7px; }
-    .step-text { font-size: 12px; color: var(--muted); margin-top: 4px; }
-    footer { border-top: 1px solid #222623; padding: 19px 0 28px; display: flex; align-items: center; justify-content: space-between; gap: 14px; color: #7f8981; font-size: 11px; }
-    footer a { color: #a5afa7; text-decoration: none; }
-    footer a:hover { color: var(--accent); }
-    .loading { display: inline-block; width: 13px; height: 13px; border: 2px solid #50604b; border-top-color: var(--accent); border-radius: 50%; animation: spin .75s linear infinite; }
+    .how { margin-top: 30px; }
+    .how h2 { margin: 0; font-size: 13px; font-weight: 600; color: var(--muted); }
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 14px; }
+    .step { display: flex; align-items: flex-start; gap: 9px; min-width: 0; }
+    .step-number {
+      flex: 0 0 auto; display: grid; place-items: center; width: 23px; height: 23px;
+      border: 1px solid var(--border); border-radius: 6px; font-size: 11px; color: var(--muted);
+      font-weight: 600; font-variant-numeric: tabular-nums;
+    }
+    .step-title { font-size: 13px; font-weight: 600; margin-top: 1px; }
+    .step-text { font-size: 12px; line-height: 1.4; color: var(--muted); margin-top: 2px; }
+    footer { padding: 17px 0 24px; border-top: 1px solid var(--header-border); color: var(--muted); font-size: 12px; }
+    footer a { color: var(--muted); text-decoration: none; }
+    footer a:hover { color: var(--text); }
+    .loading { display: inline-block; width: 13px; height: 13px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .75s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     @media (max-width: 520px) {
-      .shell { width: min(100% - 26px, 680px); }
-      main { padding: 47px 0 38px; }
-      header { height: 68px; }
-      .card { padding: 11px; margin-top: 27px; }
-      .dropzone { min-height: 222px; padding: 25px 12px; }
-      .details { gap: 7px; }
-      .detail { padding: 10px 9px; }
-      .detail strong { font-size: 12px; }
-      .detail span { font-size: 10px; }
-      .steps { gap: 13px; }
+      .shell { width: min(100% - 28px, 640px); }
+      main { padding: 28px 0 36px; }
+      header { min-height: 62px; }
+      .card { padding: 9px; }
+      .dropzone { min-height: 210px; padding: 24px 12px; }
+      .tag { font-size: 11px; padding: 4px 7px; }
+      .header-actions { gap: 6px; }
+      .theme-toggle { padding: 6px 8px; }
+      .steps { gap: 10px; }
+      .step { display: block; }
+      .step-title { margin-top: 7px; }
       .step-text { font-size: 11px; }
-      .tag { font-size: 10px; padding: 4px 8px; }
+      .privacy { align-items: flex-start; }
     }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
   </style>
@@ -138,18 +207,17 @@
 <body>
   <div class="shell">
     <header>
-      <a class="brand" href="./" aria-label="MRPACK ZIP home">
-        <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
-        <span>mrpack.zip</span>
-      </a>
-      <span class="tag">Free · No account</span>
+      <a class="brand" href="./" aria-label="mrpack.zip home">mrpack.zip</a>
+      <div class="header-actions">
+        <span class="tag">Local processing</span>
+        <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to light mode">
+          <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg>
+          <span id="themeLabel">Light mode</span>
+        </button>
+      </div>
     </header>
 
     <main>
-      <div class="eyebrow">One file in. Mods out.</div>
-      <h1>Unpack your mods.<br><span>Nothing extra.</span></h1>
-      <p class="intro">Turn a Modrinth .mrpack into a regular ZIP with the actual mod files, ready to move wherever you need them.</p>
-
       <section class="card" aria-label="MRPACK converter">
         <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Choose or drop a .mrpack file">
           <div class="upload-icon" aria-hidden="true">
@@ -193,25 +261,18 @@
         Your file stays on your device. Only the mod downloads are fetched from their listed sources.
       </div>
 
-      <div class="details" aria-label="Features">
-        <div class="detail"><strong>Browser-only</strong><span>No uploads or accounts</span></div>
-        <div class="detail"><strong>SHA-512 checks</strong><span>Verify mod downloads</span></div>
-        <div class="detail"><strong>Just the mods</strong><span>Clean ZIP output</span></div>
-      </div>
-
-      <section class="how">
+      <section class="how" aria-label="How it works">
         <h2>How it works</h2>
         <div class="steps">
-          <div><div class="step-number">01 / UPLOAD</div><div class="step-title">Choose a pack</div><div class="step-text">Drop in any compatible .mrpack.</div></div>
-          <div><div class="step-number">02 / EXTRACT</div><div class="step-title">Fetch the mods</div><div class="step-text">Downloads are checked against the pack's hashes.</div></div>
-          <div><div class="step-number">03 / DOWNLOAD</div><div class="step-title">Get your ZIP</div><div class="step-text">A regular ZIP with the files inside a mods folder.</div></div>
+          <div class="step"><span class="step-number">1</span><div><div class="step-title">Upload</div><div class="step-text">Choose a .mrpack.</div></div></div>
+          <div class="step"><span class="step-number">2</span><div><div class="step-title">Extract</div><div class="step-text">Mods are downloaded.</div></div></div>
+          <div class="step"><span class="step-number">3</span><div><div class="step-title">Download</div><div class="step-text">Get your ZIP.</div></div></div>
         </div>
       </section>
     </main>
 
     <footer>
-      <span>Small tool. No nonsense.</span>
-      <a href="https://github.com/todouro/mrpack-zip" target="_blank" rel="noreferrer">Source on GitHub ↗</a>
+      <a href="https://github.com/todouro/mrpack-zip" target="_blank" rel="noreferrer">GitHub ↗</a>
     </footer>
   </div>
 
@@ -219,6 +280,28 @@
   <script>
     (function () {
       "use strict";
+
+      const themeToggle = document.getElementById("themeToggle");
+      const themeLabel = document.getElementById("themeLabel");
+      const themeIcon = document.getElementById("themeIcon");
+      const themeMeta = document.querySelector('meta[name="theme-color"]');
+
+      function applyTheme(theme) {
+        const selected = theme === "light" ? "light" : "dark";
+        document.documentElement.dataset.theme = selected;
+        themeToggle.setAttribute("aria-label", selected === "dark" ? "Switch to light mode" : "Switch to dark mode");
+        themeLabel.textContent = selected === "dark" ? "Light mode" : "Dark mode";
+        themeIcon.innerHTML = selected === "dark"
+          ? '<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/>'
+          : '<path d="M20.9 13A8.5 8.5 0 0 1 11 3.1 8.5 8.5 0 1 0 20.9 13Z"/>';
+        themeMeta.setAttribute("content", selected === "dark" ? "#111312" : "#ffffff");
+        try { localStorage.setItem("mrpack-zip-theme", selected); } catch (_) {}
+      }
+
+      themeToggle.addEventListener("click", function () {
+        applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
+      });
+      applyTheme(document.documentElement.dataset.theme);
 
       const MAX_PACK_SIZE = 250 * 1024 * 1024;
       const fileInput = document.getElementById("fileInput");

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#111312">
   <meta name="description" content="Convert Modrinth .mrpack files into a ZIP containing the actual mods. Runs in your browser.">
-  <title>mrpack.zip</title>
+  <title>mrpack-zip</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%23171918'/%3E%3Cpath d='M10 12h8v8h-8zM22 12h8v8h-8zM10 24h8v4h-8zM22 24h8v4h-8z' fill='%23b7f397'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -69,7 +69,7 @@
       outline: 2px solid var(--accent);
       outline-offset: 3px;
     }
-    .shell { width: min(100% - 36px, 640px); margin: 0 auto; }
+    .shell { width: min(100% - 40px, 680px); margin: 0 auto; }
     header {
       min-height: 68px;
       display: flex;
@@ -83,43 +83,40 @@
       text-decoration: none;
       font-weight: 700;
       letter-spacing: -.045em;
-      font-size: 17px;
+      font-size: 18px;
     }
-    .header-actions { display: flex; align-items: center; gap: 10px; }
-    .tag {
+    .header-actions { display: flex; align-items: center; gap: 18px; }
+    .github-link {
       color: var(--muted);
-      font-size: 12px;
-      border: 1px solid var(--border);
-      border-radius: 7px;
-      padding: 5px 9px;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
       white-space: nowrap;
     }
+    .github-link:hover { color: var(--text); }
     .theme-toggle {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 7px;
-      min-height: 34px;
-      padding: 6px 10px;
-      border: 1px solid var(--border);
-      border-radius: 7px;
-      background: var(--surface);
+      display: inline-grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      padding: 8px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
       color: var(--text);
-      font-size: 12px;
-      font-weight: 600;
     }
     .theme-toggle:hover { background: var(--surface-soft); }
-    .theme-toggle svg { width: 15px; height: 15px; }
-    main { padding: 44px 0 52px; }
+    .theme-toggle svg { display: block; width: 20px; height: 20px; }
+    main { padding: 52px 0 58px; }
     .card {
-      padding: 14px;
+      padding: 16px;
       border: 1px solid var(--border);
       border-radius: 14px;
       background: var(--surface);
     }
     .dropzone {
-      min-height: 225px;
-      padding: 30px 20px;
+      min-height: 242px;
+      padding: 32px 22px;
       border: 1px dashed var(--drop-border);
       border-radius: 9px;
       background: var(--drop-bg);
@@ -133,16 +130,16 @@
     }
     .dropzone:hover, .dropzone.dragging { border-color: var(--accent); background: var(--hover-bg); }
     .upload-icon {
-      width: 40px; height: 40px; display: grid; place-items: center;
+      width: 44px; height: 44px; display: grid; place-items: center;
       border-radius: 10px; background: var(--icon-bg); color: var(--accent); margin-bottom: 15px;
     }
-    .upload-icon svg { width: 21px; height: 21px; }
-    .drop-title { font-size: 16px; font-weight: 600; letter-spacing: -.025em; }
+    .upload-icon svg { width: 22px; height: 22px; }
+    .drop-title { font-size: 17px; font-weight: 600; letter-spacing: -.025em; }
     .drop-sub { margin-top: 3px; color: var(--muted); font-size: 13px; }
     .button {
       display: inline-flex; align-items: center; justify-content: center; gap: 8px;
       border: 1px solid transparent; border-radius: 8px; padding: 9px 14px;
-      min-height: 39px; font-weight: 600; font-size: 13px;
+      min-height: 42px; font-weight: 600; font-size: 13px;
       transition: opacity .15s ease, background-color .15s ease, border-color .15s ease;
     }
     .button:disabled { opacity: .42; cursor: not-allowed; }
@@ -150,7 +147,7 @@
     .primary:not(:disabled):hover { filter: brightness(1.06); }
     .secondary { background: var(--surface-soft); border-color: var(--border); color: var(--text); }
     .secondary:not(:disabled):hover { border-color: var(--muted); }
-    .dropzone .button { margin-top: 17px; }
+    .dropzone .button { margin-top: 18px; }
     .input-note { font-size: 12px; color: var(--muted); margin-top: 12px; }
     .privacy { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 12px; padding: 12px 2px 0; }
     .privacy svg { flex: 0 0 auto; width: 14px; height: 14px; }
@@ -170,9 +167,9 @@
     .status-message.error { color: var(--danger); }
     .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
     .actions .primary { flex: 1; }
-    .how { margin-top: 30px; }
+    .how { margin-top: 36px; }
     .how h2 { margin: 0; font-size: 13px; font-weight: 600; color: var(--muted); }
-    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 14px; }
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 16px; }
     .step { display: flex; align-items: flex-start; gap: 9px; min-width: 0; }
     .step-number {
       flex: 0 0 auto; display: grid; place-items: center; width: 23px; height: 23px;
@@ -187,14 +184,14 @@
     .loading { display: inline-block; width: 13px; height: 13px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .75s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     @media (max-width: 520px) {
-      .shell { width: min(100% - 28px, 640px); }
-      main { padding: 28px 0 36px; }
+      .shell { width: min(100% - 28px, 680px); }
+      main { padding: 34px 0 40px; }
       header { min-height: 62px; }
       .card { padding: 9px; }
       .dropzone { min-height: 210px; padding: 24px 12px; }
       .tag { font-size: 11px; padding: 4px 7px; }
-      .header-actions { gap: 6px; }
-      .theme-toggle { padding: 6px 8px; }
+      .header-actions { gap: 12px; }
+      .theme-toggle { width: 36px; height: 36px; padding: 7px; }
       .steps { gap: 10px; }
       .step { display: block; }
       .step-title { margin-top: 7px; }
@@ -207,12 +204,11 @@
 <body>
   <div class="shell">
     <header>
-      <a class="brand" href="./" aria-label="mrpack.zip home">mrpack.zip</a>
+      <a class="brand" href="./" aria-label="mrpack-zip home">mrpack-zip</a>
       <div class="header-actions">
-        <span class="tag">Local processing</span>
-        <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to light mode">
+        <a class="github-link" href="https://github.com/todouro/mrpack-zip" target="_blank" rel="noreferrer">GitHub ↗</a>
+        <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to light mode" title="Switch to light mode">
           <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg>
-          <span id="themeLabel">Light mode</span>
         </button>
       </div>
     </header>
@@ -271,9 +267,6 @@
       </section>
     </main>
 
-    <footer>
-      <a href="https://github.com/todouro/mrpack-zip" target="_blank" rel="noreferrer">GitHub ↗</a>
-    </footer>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
@@ -282,7 +275,6 @@
       "use strict";
 
       const themeToggle = document.getElementById("themeToggle");
-      const themeLabel = document.getElementById("themeLabel");
       const themeIcon = document.getElementById("themeIcon");
       const themeMeta = document.querySelector('meta[name="theme-color"]');
 
@@ -290,7 +282,7 @@
         const selected = theme === "light" ? "light" : "dark";
         document.documentElement.dataset.theme = selected;
         themeToggle.setAttribute("aria-label", selected === "dark" ? "Switch to light mode" : "Switch to dark mode");
-        themeLabel.textContent = selected === "dark" ? "Light mode" : "Dark mode";
+        themeToggle.title = selected === "dark" ? "Switch to light mode" : "Switch to dark mode";
         themeIcon.innerHTML = selected === "dark"
           ? '<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/>'
           : '<path d="M20.9 13A8.5 8.5 0 0 1 11 3.1 8.5 8.5 0 1 0 20.9 13Z"/>';

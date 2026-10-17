@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script>try{document.documentElement.dataset.theme=localStorage.getItem("mrpack-zip-theme")||(matchMedia("(prefers-color-scheme: light)").matches?"light":"dark")}catch(_){}</script>
+  <script>try{const savedTheme=localStorage.getItem("mrpack-zip-theme-preference");document.documentElement.dataset.theme=savedTheme||(window.matchMedia("(prefers-color-scheme: light)").matches?"light":"dark")}catch(_){document.documentElement.dataset.theme=window.matchMedia("(prefers-color-scheme: light)").matches?"light":"dark"}</script>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 
   <style>
@@ -277,8 +277,16 @@
       const themeToggle = document.getElementById("themeToggle");
       const themeIcon = document.getElementById("themeIcon");
       const themeMeta = document.querySelector('meta[name="theme-color"]');
+      const systemTheme = window.matchMedia("(prefers-color-scheme: light)");
+      const themePreferenceKey = "mrpack-zip-theme-preference";
+      let manualThemeSelected = false;
 
-      function applyTheme(theme) {
+      try {
+        const savedTheme = localStorage.getItem(themePreferenceKey);
+        manualThemeSelected = savedTheme === "light" || savedTheme === "dark";
+      } catch (_) {}
+
+      function applyTheme(theme, rememberChoice) {
         const selected = theme === "light" ? "light" : "dark";
         document.documentElement.dataset.theme = selected;
         themeToggle.setAttribute("aria-label", selected === "dark" ? "Switch to light mode" : "Switch to dark mode");
@@ -287,13 +295,26 @@
           ? '<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/>'
           : '<path d="M20.9 13A8.5 8.5 0 0 1 11 3.1 8.5 8.5 0 1 0 20.9 13Z"/>';
         themeMeta.setAttribute("content", selected === "dark" ? "#080b10" : "#ffffff");
-        try { localStorage.setItem("mrpack-zip-theme", selected); } catch (_) {}
+
+        if (rememberChoice) {
+          manualThemeSelected = true;
+          try { localStorage.setItem(themePreferenceKey, selected); } catch (_) {}
+        }
       }
 
       themeToggle.addEventListener("click", function () {
-        applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
+        applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark", true);
       });
-      applyTheme(document.documentElement.dataset.theme);
+      applyTheme(document.documentElement.dataset.theme, false);
+
+      function followSystemTheme(event) {
+        if (!manualThemeSelected) applyTheme(event.matches ? "light" : "dark", false);
+      }
+      if (typeof systemTheme.addEventListener === "function") {
+        systemTheme.addEventListener("change", followSystemTheme);
+      } else if (typeof systemTheme.addListener === "function") {
+        systemTheme.addListener(followSystemTheme);
+      }
 
       const MAX_PACK_SIZE = 250 * 1024 * 1024;
       const fileInput = document.getElementById("fileInput");

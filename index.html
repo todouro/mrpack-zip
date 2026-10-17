@@ -16,22 +16,22 @@
   <style>
     :root {
       color-scheme: dark;
-      --bg: #080b10;
-      --surface: #10151d;
-      --surface-soft: #171e29;
-      --border: #293241;
+      --bg: #0b0b0c;
+      --surface: #151516;
+      --surface-soft: #202022;
+      --border: #343436;
       --text: #edf3fc;
-      --muted: #9aa6b8;
+      --muted: #a0a0a5;
       --accent: #78a9ff;
       --accent-ink: #08162b;
       --danger: #ff9f9f;
-      --header-border: #252e3b;
-      --drop-bg: #0c1118;
-      --drop-border: #3a475b;
-      --hover-bg: #111d2c;
-      --icon-bg: #14243a;
-      --file-icon-bg: #17263b;
-      --track: #2a3545;
+      --header-border: #29292b;
+      --drop-bg: #101011;
+      --drop-border: #454548;
+      --hover-bg: #1c1c1e;
+      --icon-bg: #262628;
+      --file-icon-bg: #262628;
+      --track: #38383b;
       --radius: 12px;
     }
     :root[data-theme="light"] {
@@ -294,7 +294,7 @@
         themeIcon.innerHTML = selected === "dark"
           ? '<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/>'
           : '<path d="M20.9 13A8.5 8.5 0 0 1 11 3.1 8.5 8.5 0 1 0 20.9 13Z"/>';
-        themeMeta.setAttribute("content", selected === "dark" ? "#080b10" : "#ffffff");
+        themeMeta.setAttribute("content", selected === "dark" ? "#0b0b0c" : "#ffffff");
 
         if (rememberChoice) {
           manualThemeSelected = true;

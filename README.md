@@ -1,31 +1,38 @@
-# MRPACK ZIP
+# mrpack-zip
 
-A tiny, static converter that turns a Modrinth `.mrpack` into a regular ZIP containing the actual client-side files listed under `mods/`.
+A minimal browser-based tool that converts a Modrinth `.mrpack` into a regular `.zip` containing its downloadable client-side mod files.
 
-## Use
+**Website:** https://mrpack-zip.vercel.app/  
+**Source:** https://github.com/todouro/mrpack-zip
 
-1. Open the website over HTTPS.
-2. Drop in a `.mrpack` file.
-3. Wait for the mods to download and checksums to be verified.
-4. Click **Download ZIP**.
+## How to use
 
-The output is named `<pack-name>-mods.zip` and keeps the `mods/` folder structure. It intentionally excludes config files, resource packs, shaders, and other overrides.
+1. Open [mrpack-zip.vercel.app](https://mrpack-zip.vercel.app/).
+2. Drop a `.mrpack` file into the upload area, or choose one.
+3. Let the tool download the mods and verify available SHA-512 hashes.
+4. Select **Download ZIP**.
+
+The output is named `<pack-name>-mods.zip` and keeps the `mods/` folder structure. Configuration files, resource packs, shaders, and other overrides are not included. Files marked as unsupported on the client are skipped.
+
+## Features
+
+- Drag-and-drop or file-picker upload.
+- Light and dark themes that follow the system/browser preference by default.
+- Remembers a user's theme choice after they manually toggle it.
+- Displays conversion progress and download errors.
+- Verifies SHA-512 checksums when the manifest includes them.
+- No account, backend, build step, or server-side file storage.
 
 ## Privacy and limitations
 
-- The uploaded pack is read locally in your browser; it is not sent to a server.
-- The converter fetches each mod directly from the HTTPS URL recorded in the pack. A source that blocks cross-origin browser requests (CORS) can prevent that mod from downloading.
-- SHA-512 hashes are verified when provided. If a hash is present but the browser cannot verify it, conversion stops rather than silently skipping verification.
-- For browser memory safety, the input pack limit is 250 MB. Large packs may still use substantial memory while the ZIP is generated.
-- Files marked as unsupported on the client are skipped.
+- The `.mrpack` is opened locally in the browser; the pack itself is not uploaded to this project.
+- Mod files are fetched directly from the HTTPS URLs listed in the pack. Hosts that block cross-origin browser requests (CORS) may prevent a file from downloading.
+- If a listed SHA-512 hash cannot be verified, conversion stops rather than silently skipping verification.
+- Input packs are limited to 250 MB. Converting large packs may use considerable browser memory.
+- An internet connection is needed to load JSZip and DM Sans and to fetch mod files.
 
-## Deploy with GitHub Pages
+## Development and deployment
 
-This is a static site: no Node.js, build step, database, API key, or server is required.
+This is a static site; the website lives in `index.html` and requires no build tooling or package installation. Open the file in a browser for basic UI work, or serve it locally over HTTP/HTTPS for browser features and realistic testing.
 
-1. Open the repository's **Settings → Pages**.
-2. Under **Build and deployment**, select **Deploy from a branch**.
-3. Select branch **main** and folder **/ (root)**, then save.
-4. After GitHub Pages finishes deploying, open the site URL shown in that section.
-
-The page uses JSZip from jsDelivr; the browser needs an internet connection to load that library and fetch the listed mods.
+The production website is hosted on Vercel at https://mrpack-zip.vercel.app/. The repository can be connected to Vercel for automatic deployment from `main`.

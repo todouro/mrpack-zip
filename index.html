@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#111312">
+  <meta name="theme-color" content="#080b10">
   <meta name="description" content="Convert Modrinth .mrpack files into a ZIP containing the actual mods. Runs in your browser.">
   <title>mrpack-zip</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%23171918'/%3E%3Cpath d='M10 12h8v8h-8zM22 12h8v8h-8zM10 24h8v4h-8zM22 24h8v4h-8z' fill='%23b7f397'/%3E%3C/svg%3E">
@@ -16,22 +16,22 @@
   <style>
     :root {
       color-scheme: dark;
-      --bg: #111312;
-      --surface: #171a18;
-      --surface-soft: #1d211e;
-      --border: #2c322e;
-      --text: #edf0ed;
-      --muted: #929b94;
-      --accent: #b7f397;
-      --accent-ink: #1b2914;
+      --bg: #080b10;
+      --surface: #10151d;
+      --surface-soft: #171e29;
+      --border: #293241;
+      --text: #edf3fc;
+      --muted: #9aa6b8;
+      --accent: #78a9ff;
+      --accent-ink: #08162b;
       --danger: #ff9f9f;
-      --header-border: #292f2b;
-      --drop-bg: #141715;
-      --drop-border: #454e47;
-      --hover-bg: #1c231c;
-      --icon-bg: #222a20;
-      --file-icon-bg: #252c25;
-      --track: #303632;
+      --header-border: #252e3b;
+      --drop-bg: #0c1118;
+      --drop-border: #3a475b;
+      --hover-bg: #111d2c;
+      --icon-bg: #14243a;
+      --file-icon-bg: #17263b;
+      --track: #2a3545;
       --radius: 12px;
     }
     :root[data-theme="light"] {
@@ -40,17 +40,17 @@
       --surface: #ffffff;
       --surface-soft: #f6f7f6;
       --border: #e1e5e1;
-      --text: #202420;
-      --muted: #69716b;
-      --accent: #39752d;
+      --text: #1c2738;
+      --muted: #5f6b7d;
+      --accent: #2563eb;
       --accent-ink: #ffffff;
       --danger: #b42318;
-      --header-border: #e8ebe8;
+      --header-border: #e5eaf2;
       --drop-bg: #fbfcfb;
-      --drop-border: #d5dbd5;
-      --hover-bg: #f4f8f2;
-      --icon-bg: #edf4e9;
-      --file-icon-bg: #edf4e9;
+      --drop-border: #cdd7e6;
+      --hover-bg: #f1f6ff;
+      --icon-bg: #edf4ff;
+      --file-icon-bg: #edf4ff;
       --track: #e4e8e4;
     }
     * { box-sizing: border-box; }
@@ -286,7 +286,7 @@
         themeIcon.innerHTML = selected === "dark"
           ? '<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/>'
           : '<path d="M20.9 13A8.5 8.5 0 0 1 11 3.1 8.5 8.5 0 1 0 20.9 13Z"/>';
-        themeMeta.setAttribute("content", selected === "dark" ? "#111312" : "#ffffff");
+        themeMeta.setAttribute("content", selected === "dark" ? "#080b10" : "#ffffff");
         try { localStorage.setItem("mrpack-zip-theme", selected); } catch (_) {}
       }
 

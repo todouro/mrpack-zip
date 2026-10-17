@@ -3,7 +3,6 @@
 A minimal browser-based tool that converts a Modrinth `.mrpack` into a regular `.zip` containing its downloadable client-side mod files.
 
 **Website:** https://mrpack-zip.vercel.app/  
-**Source:** https://github.com/todouro/mrpack-zip
 
 ## How to use
 

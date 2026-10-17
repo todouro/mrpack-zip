@@ -284,6 +284,7 @@
 
       function selectFile(file) {
         if (!file) return;
+        runId++;
         if (!/\.(mrpack|zip)$/i.test(file.name)) {
           status.hidden = false;
           dropzone.hidden = true;
@@ -339,7 +340,7 @@
             const buffer = await response.arrayBuffer();
             if (entry.hashes && entry.hashes.sha512) {
               const matches = await sha512Matches(buffer, entry.hashes.sha512);
-              if (matches === false) throw new Error("SHA-512 checksum did not match.");
+              if (matches !== true) throw new Error(matches === false ? "SHA-512 checksum did not match." : "SHA-512 verification is unavailable in this browser.");
             }
             return buffer;
           } catch (error) {

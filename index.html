@@ -152,17 +152,16 @@
     .privacy {
       display: flex;
       align-items: center;
-      gap: 10px;
-      margin-top: 12px;
-      padding: 11px 13px;
-      border: 1px solid var(--border);
-      border-radius: 9px;
-      background: var(--surface-soft);
+      justify-content: center;
+      gap: 8px;
+      margin-top: 14px;
+      padding: 0 4px;
       color: var(--muted);
       font-size: 12px;
-      line-height: 1.45;
+      line-height: 1.5;
+      text-align: center;
     }
-    .privacy svg { flex: 0 0 auto; width: 16px; height: 16px; color: var(--accent); }
+    .privacy svg { flex: 0 0 auto; width: 15px; height: 15px; color: var(--accent); }
     .status { margin-top: 12px; padding: 16px; border: 1px solid var(--border); border-radius: 9px; background: var(--surface-soft); }
     .status[hidden], .dropzone[hidden], .actions[hidden], .status-message[hidden] { display: none; }
     .file-row { display: flex; align-items: center; gap: 11px; min-width: 0; }
